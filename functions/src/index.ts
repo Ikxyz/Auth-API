@@ -6,10 +6,12 @@ const db = admin.firestore();
 
 //let response:{'message': String, 'success': Boolean,'data':any};
 
-export const helloWorld = functions.https.onRequest(async(req, res) => {
+export const signUp = functions.https.onRequest(async(req, res) => {
     let userData = req.body;
     let response:any={};
-     try {
+    try {
+       
+
         // create user account
         const userRecord = await admin.auth().createUser({
             email: userData.email,
@@ -20,8 +22,9 @@ export const helloWorld = functions.https.onRequest(async(req, res) => {
         });
         console.log('Successfully created new user:', userRecord.uid);
 
-        // remove user secret from json data
-        delete userData.secret;
+        // remove user password from json data
+         delete userData.pwd;
+         
 
         //create user profile with firestore
         await db.doc(`user/${userRecord.uid}`).set(userData);
@@ -50,4 +53,17 @@ export const helloWorld = functions.https.onRequest(async(req, res) => {
 
 
     
-   });
+});
+   
+
+export const getUidFormEmail = functions.https.onRequest(async (req, res) => {
+   try {
+       const e = await admin.auth().getUserByEmail(req.body.email);
+       res.send({uid:e.uid,email:e.email,isVerified:e.emailVerified,photoUrl:e.phoneNumber,metadata:e.metadata});
+       console.log(`Search found ${e.uid}`);
+   } catch (error) {
+       console.log(`Error Occurred: ${error}`);
+       res.send(null);
+   }
+})
+
